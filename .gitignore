@@ -78,6 +78,7 @@ target/
 # virtualenv
 venv/
 ENV/
+test-venv/
 
 # Spyder project settings
 .spyderproject
