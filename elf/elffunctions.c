@@ -46,8 +46,10 @@ int _inject_PT_NOTE_hijack_entry(char *bin_path, char *payload_path)
     return 0;
 }
 
-int test_main(int argc, char **argv)
+#ifdef QUICK_TEST
+int main(int argc, char **argv)
 {
     _inject_PT_NOTE_hijack_entry(argv[1], argv[2]);
     return 0;
 }
+#endif
