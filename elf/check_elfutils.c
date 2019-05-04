@@ -6,10 +6,12 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include "elfutils.h"
+#include "tinybin.h"
 #define TEST_FILE "test_content.txt"
 #define TEST_CONTENT "test_content"
 #define TEST_CONTENT_LEN 12
 #define TEST_REPLACE_CONTENT "test_replace"
+#define AFTER_SEGMENTS_ADDR (0x402010)
 
 
 void create_test_file()
@@ -45,6 +47,13 @@ START_TEST (test_given_known_file_then_map_can_modify)
 }
 END_TEST
 
+START_TEST (test_given_regular_binary_then_get_addr_is_correct)
+{
+    Elf64_Addr addr = get_addr_after_segments(&tinybin_map_entry);
+    ck_assert(addr == AFTER_SEGMENTS_ADDR);
+}
+END_TEST
+
 Suite * test_suite(void)
 {
     Suite *s;
@@ -57,6 +66,7 @@ Suite * test_suite(void)
 
     tcase_add_test(tc_core, test_given_known_file_then_map_is_correct);
     tcase_add_test(tc_core, test_given_known_file_then_map_can_modify);
+    tcase_add_test(tc_core, test_given_regular_binary_then_get_addr_is_correct);
     suite_add_tcase(s, tc_core);
 
     return s;

@@ -28,7 +28,7 @@ int patch_jmp_in_segment(Elf64_Addr orig_entry,
         printf("jmp to patch not found");
         return EXIT_FAILURE;
     }
-    printf("Found jmp in %x\n", jmp_addr);
+    printf("Found jmp in %lx\n", jmp_addr);
     // 1 byte for e9 and 4 for the address
     Elf64_Addr jmp_offset = (Elf64_Addr) jmp_addr - (Elf64_Addr) segment_addr;
     printf("Jmp offset: %lx\n", jmp_offset);

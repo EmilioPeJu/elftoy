@@ -8,6 +8,7 @@
 #include <assert.h>
 #include "elfutils.h"
 
+
 int map_file(char *filepath, struct map_entry *map_entry)
 {
     struct stat filestat;
@@ -28,3 +29,20 @@ void *unmap_file(struct map_entry *map_entry)
     munmap(map_entry->m_addr, map_entry->m_sz);
 }
 
+/*
+ * Get an available virtual address, a page after the end of the last segment
+ */
+Elf64_Addr get_addr_after_segments(struct map_entry *target_file)
+{
+    Elf64_Ehdr *ehdr = target_file->m_addr;
+    Elf64_Addr target_addr = 0;
+    for (size_t index=0; index < ehdr->e_phnum; index++) {
+        Elf64_Phdr *phdr = (Elf64_Phdr *) ((char *) ehdr + ehdr->e_phoff
+                           + ehdr->e_phentsize*index);
+        if (phdr->p_type == PT_LOAD) {
+            Elf64_Addr candidate = phdr->p_vaddr + phdr->p_memsz;
+            target_addr = (candidate > target_addr ? candidate : target_addr);
+        }
+    }
+    return target_addr + PAGE_SIZE ;
+}

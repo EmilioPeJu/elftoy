@@ -7,7 +7,6 @@
 #include <unistd.h>
 #include <assert.h>
 #include "elfinjections.h"
-#define PAGE_SIZE 4096
 #define BUFFER_SIZE 256
 
 int inject_PT_NOTE(Elf64_Addr target_addr,
@@ -16,7 +15,6 @@ int inject_PT_NOTE(Elf64_Addr target_addr,
                    struct segment_entry *target_segment)
 {
     Elf64_Addr correction;
-    printf("Addr %lx Size %lx\n", target_file->m_addr, target_file->m_sz);
     Elf64_Ehdr *ehdr = target_file->m_addr;
     assert(memcmp(ehdr, ELFMAG, SELFMAG) == 0);
     for(size_t ph_index=0; ph_index < ehdr->e_phnum; ph_index++) {
@@ -36,7 +34,7 @@ int inject_PT_NOTE(Elf64_Addr target_addr,
             target_segment->s_sz = phdr->p_filesz;
             target_segment->s_offset = phdr->p_offset;
             target_segment->s_addr = phdr->p_vaddr;
-            printf("Segment changed, offset: %x addr: %x, sz: %x\n",
+            printf("Segment changed, offset: 0x%lx addr: 0x%lx, sz: 0x%lx\n",
                    target_segment->s_offset, target_segment->s_addr,
                    target_segment->s_sz);
             phdr->p_align = PAGE_SIZE;
