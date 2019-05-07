@@ -16,6 +16,9 @@ clean:
 	rm -rf *.o elffunctions hello injectme check_elfutils tinybin \
 	    check_elfhijacking
 
+tinyelfheader: tinyelfheader.asm
+	yasm "$<"
+
 tinybin.o: tinybin.asm
 	yasm -f elf64 -o "$@" "$^"
 
