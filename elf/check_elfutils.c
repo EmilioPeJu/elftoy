@@ -54,6 +54,13 @@ START_TEST (test_given_regular_binary_then_get_addr_is_correct)
 }
 END_TEST
 
+START_TEST (test_get_phdr_finds_PT_LOAD)
+{
+    Elf64_Phdr *phdr = get_phdr(PT_LOAD, &tinybin_map_entry);
+    ck_assert((uint64_t) phdr == (uint64_t) ((char *) tinybin_map_entry.m_addr + 0xe8));
+}
+END_TEST
+
 Suite * test_suite(void)
 {
     Suite *s;

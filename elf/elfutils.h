@@ -20,4 +20,6 @@ void *unmap_file(struct map_entry *map_entry);
 
 Elf64_Addr get_addr_after_segments(struct map_entry *target_file);
 
+Elf64_Phdr *get_phdr(int type, struct map_entry *target_file);
+
 #endif

