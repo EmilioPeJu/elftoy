@@ -11,7 +11,7 @@ push rdx
 push rcx
 push r11
 mov rax, 1 ; write
-mov rdi, 0 ; stdout
+mov rdi, 1 ; stdout
 lea rsi, [rel msg] ; *buf
 mov rdx, 10    ; len
 syscall
