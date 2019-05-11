@@ -9,10 +9,10 @@
 #include "elfinjections.h"
 #define BUFFER_SIZE 256
 
-int inject_PT_NOTE(Elf64_Addr target_addr,
-                   size_t target_sz,
-                   struct map_entry *target_file,
-                   struct segment_entry *target_segment)
+int inject_note_segment(Elf64_Addr target_addr,
+                        size_t target_sz,
+                        struct map_entry *target_file,
+                        struct segment_entry *target_segment)
 {
     Elf64_Addr correction;
     Elf64_Ehdr *ehdr = target_file->m_addr;
@@ -31,7 +31,6 @@ int inject_PT_NOTE(Elf64_Addr target_addr,
     target_segment->s_sz = phdr->p_filesz;
     target_segment->s_offset = phdr->p_offset;
     target_segment->s_addr = phdr->p_vaddr;
-    printf("Segment changed, offset: 0x%lx addr: 0x%lx, sz: 0x%lx\n",
     target_segment->s_offset, target_segment->s_addr,
                    target_segment->s_sz);
     phdr->p_align = PAGE_SIZE;
@@ -54,7 +53,6 @@ int append_payload(char *target_filepath,
         assert(n_writebytes == n_readbytes);
         total_copied += n_readbytes;
     }
-    printf("Payload added: 0x%lx bytes\n", total_copied);
     close(target_fd);
     close(payload_fd);
     return 0;

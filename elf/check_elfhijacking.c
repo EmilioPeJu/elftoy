@@ -8,16 +8,16 @@
 #include <fcntl.h>
 #include "elfhijacking.h"
 #include "tinybin.h"
-#define NEW_ENTRY (0x1234abcd)
-#define ORIGINAL_ENTRY (0x401000)
+#define TEST_ADDR (0x1234abcd)
 
-
-START_TEST (test_given_regular_elf_file_then_hijack_entry_works)
+START_TEST (test_given_regular_elf_file_then_hijack_entry_replaces_entry)
 {
-    Elf64_Addr entry_point = hijack_entry(NEW_ENTRY, &tinybin_map_entry);
-    ck_assert(entry_point == ORIGINAL_ENTRY);
+    Elf64_Addr entry_point = hijack_entry(TEST_ADDR, &tinybin_map_entry);
+    ck_assert(entry_point == 0x401000);
     Elf64_Ehdr *ehdr = tinybin_map_entry.m_addr;
-    ck_assert(ehdr->e_entry == NEW_ENTRY);
+    ck_assert(ehdr->e_entry == TEST_ADDR);
+}
+END_TEST
 
 START_TEST (test_given_regular_elf_file_then_hijack_got_replaces_entry)
 {
@@ -41,7 +41,8 @@ Suite * test_suite(void)
     tc_core = tcase_create("Core");
 
     tcase_add_test(tc_core,
-            test_given_regular_elf_file_then_hijack_entry_works);
+            test_given_regular_elf_file_then_hijack_entry_replaces_entry);
+    tcase_add_test(tc_core,
             test_given_regular_elf_file_then_hijack_got_replaces_entry);
     suite_add_tcase(s, tc_core);
 

