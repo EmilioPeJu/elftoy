@@ -86,3 +86,5 @@ test-venv/
 # Rope project settings
 .ropeproject
 .idea/
+
+*.o
