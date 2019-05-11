@@ -61,6 +61,40 @@ START_TEST (test_get_phdr_finds_PT_LOAD)
 }
 END_TEST
 
+START_TEST (test_get_dyn_val_finds_DT_PLTGOT)
+{
+    uint64_t got_addr = get_dyn_val(DT_PLTGOT, &tinybin_usinglib_map_entry);
+    ck_assert(got_addr == 0x404000);
+}
+END_TEST
+
+START_TEST (test_get_dynsym_gets_symbol)
+{
+    size_t index;
+    Elf64_Sym *sym = get_dynsym("get_val",
+                                &index,
+                                &tinybin_usinglib_map_entry);
+    ck_assert(index == 3);
+    Elf64_Sym *expected_sym = (Elf64_Sym *) ((char *) tinybin_usinglib_map_entry.m_addr + 0x350);
+    ck_assert(sym == expected_sym);
+}
+END_TEST
+
+START_TEST(test_get_jmprel_for_gets_rela)
+{
+    Elf64_Rela *rela = get_jmprel_for("get_val", &tinybin_usinglib_map_entry);
+    Elf64_Rela *expected_rela = (Elf64_Rela *) ((char *) tinybin_usinglib_map_entry.m_addr + 0x420);
+    ck_assert(rela == expected_rela);
+}
+END_TEST
+
+START_TEST(test_get_offset)
+{
+    Elf64_Off offset = get_offset(0x00403eef, &tinybin_usinglib_map_entry);
+    ck_assert(offset == 0x00002eef);
+}
+END_TEST
+
 Suite * test_suite(void)
 {
     Suite *s;
@@ -74,6 +108,10 @@ Suite * test_suite(void)
     tcase_add_test(tc_core, test_given_known_file_then_map_is_correct);
     tcase_add_test(tc_core, test_given_known_file_then_map_can_modify);
     tcase_add_test(tc_core, test_given_regular_binary_then_get_addr_is_correct);
+    tcase_add_test(tc_core, test_get_dyn_val_finds_DT_PLTGOT);
+    tcase_add_test(tc_core, test_get_dynsym_gets_symbol);
+    tcase_add_test(tc_core, test_get_jmprel_for_gets_rela);
+    tcase_add_test(tc_core, test_get_offset);
     suite_add_tcase(s, tc_core);
 
     return s;

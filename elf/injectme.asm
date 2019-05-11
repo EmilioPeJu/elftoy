@@ -15,16 +15,17 @@ mov rdi, 1 ; stdout
 lea rsi, [rel msg] ; *buf
 mov rdx, 10    ; len
 syscall
-;mov rax, 60
-;mov rdi, 0
-;syscall
 pop r11
 pop rcx
 pop rdx
 pop rsi
 pop rdi
 pop rax
-jmp DWORD end
-end
+jmp DWORD end ; for patching purposes
+end           ; in case it's not patched, fallback to 
+              ; exit syscall
+mov rax, 60
+mov rdi, 0
+syscall
 msg:
 db 'Inject me',0xa

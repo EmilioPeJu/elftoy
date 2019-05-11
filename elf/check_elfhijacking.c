@@ -18,6 +18,15 @@ START_TEST (test_given_regular_elf_file_then_hijack_entry_works)
     ck_assert(entry_point == ORIGINAL_ENTRY);
     Elf64_Ehdr *ehdr = tinybin_map_entry.m_addr;
     ck_assert(ehdr->e_entry == NEW_ENTRY);
+
+START_TEST (test_given_regular_elf_file_then_hijack_got_replaces_entry)
+{
+    Elf64_Addr orig_addr = hijack_got("get_val4",
+                                      TEST_ADDR,
+                                      &tinybin_usinglib_map_entry);
+    ck_assert(orig_addr == 0x401026);
+    Elf64_Addr *addr = (Elf64_Addr *) ((char *) tinybin_usinglib_map_entry.m_addr + 0x3020);
+    ck_assert(*addr == TEST_ADDR);
 }
 END_TEST
 
@@ -33,6 +42,7 @@ Suite * test_suite(void)
 
     tcase_add_test(tc_core,
             test_given_regular_elf_file_then_hijack_entry_works);
+            test_given_regular_elf_file_then_hijack_got_replaces_entry);
     suite_add_tcase(s, tc_core);
 
     return s;

@@ -22,4 +22,16 @@ Elf64_Addr get_addr_after_segments(struct map_entry *target_file);
 
 Elf64_Phdr *get_phdr(int type, struct map_entry *target_file);
 
+uint64_t get_dyn_val(int tag, struct map_entry *target_file);
+
+Elf64_Sym *get_dynsym(char *name, size_t *index, struct map_entry *target_file);
+
+Elf64_Rela *get_jmprel_for(char *name, struct map_entry *target_file);
+
+Elf64_Off get_offset(Elf64_Addr addr, struct map_entry *target_file);
+
+void *get_dyn_ptr(int type, struct map_entry *target_file);
+
+size_t get_dyn_sym_num(struct map_entry *target_file);
+
 #endif

@@ -54,7 +54,7 @@ Hello
 - [ ] Overwrite function pointers (constructor/destructor)
 - [ ] Function trampolines
 - [ ] Patch PLT jmp
-- [ ] GOT poisoning (as it is in a writable segment, it can be done at runtime)
+- [x] GOT poisoning (as it is in a writable segment, it can be done at runtime)
 - [ ] Infect data structures
 
 ### Analysis Utils
