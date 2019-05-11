@@ -11,12 +11,9 @@ This includes a python extension with high level functions (combination of many 
 
 ## Examples
 
-### PT\_NOTE injection + entry point redirection
+### note segment injection + entry point redirection
 - Prepare examples
 ```bash
-$ pip install -e . # install this (I recommend using a venv)
-...
-
 $ gcc -o hello elf/hello.c # example binary target
 ...
 
@@ -26,12 +23,12 @@ Hello
 
 $ yasm -o injectme elf/injectme.asm # example payload
 ```
-- Do injection using python extension
+- Inject, hijack and patch using python extension
 ```python
 >>> import elftoy
->>> elftoy.elf.inject_PT_NOTE_highjack_entry('hello', 'injectme')
-...
-
+>>> addr = elftoy.elf.inject_note_segment('hello', 'injectme')
+>>> orig_entry = elftoy.elf.hijack_entry('hello', addr)
+>>> elftoy.elf.patch_jmp('hello', orig_entry, addr)
 >>>
 ```
 - Check that it worked
@@ -39,6 +36,34 @@ $ yasm -o injectme elf/injectme.asm # example payload
 $ ./hello
 Inject me
 Hello
+```
+### note segment injection + Got poisoning
+
+As this is done in the file, it will only work for non pie binaries
+
+- Prepare examples
+```bash
+$ yasm -f elf64 -o libtiny.o elf/libtiny.asm
+$ gcc -shared -fpic -o libtiny.so libtiny.o
+$ gcc -nostartfiles -nostdlib -no-pie -ltiny -L$(pwd) -Wl,-rpath,$(pwd) -o tinybin_usinglib elf/tinybin_usinglib.c
+yasm -o injectme elf/injectme.asm
+$ ./tinybin_usinglib # example program calling get_val to return 23
+$ echo $?
+23
+```
+- Inject, hijack and patch using the python extension
+```python
+>>> import elftoy
+>>> segment_addr = elftoy.elf.inject_note_segment('tinybin_usinglib', 'injectme')
+>>> orig_addr = elftoy.elf.hijack_got('tinybin_usinglib', 'get_val', segment_addr)
+>>> elftoy.elf.patch_jmp('tinybin_usinglib', orig_addr, segment_addr)
+```
+- Check that it worked
+```bash
+$ ./tinybin_usinglib
+Inject me
+$ echo $?
+23
 ```
 
 ## Roadmap
