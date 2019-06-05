@@ -31,8 +31,6 @@ int inject_note_segment(Elf64_Addr target_addr,
     target_segment->s_sz = phdr->p_filesz;
     target_segment->s_offset = phdr->p_offset;
     target_segment->s_addr = phdr->p_vaddr;
-    target_segment->s_offset, target_segment->s_addr,
-                   target_segment->s_sz);
     phdr->p_align = PAGE_SIZE;
     return EXIT_SUCCESS;
 }

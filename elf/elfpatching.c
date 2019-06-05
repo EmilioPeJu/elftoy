@@ -19,10 +19,7 @@ int patch_jmp_in_segment(Elf64_Addr orig_entry,
 {
     void *segment_addr = (char *) target_file->m_addr + target_segment->s_offset;
     void *jmp_addr = memmem(segment_addr, (size_t) target_segment->s_sz,
-                       "\xe9\x00\x00\x00\x00", 5);
-           target_file->m_addr,
-           (char *) target_file->m_addr + target_file->m_sz,
-           segment_addr, jmp_addr);
+                            "\xe9\x00\x00\x00\x00", 5);
     if (!jmp_addr) {
         return EXIT_FAILURE;
     }
