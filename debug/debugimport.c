@@ -1,6 +1,7 @@
 #include <Python.h>
 #include <sys/ptrace.h>
 #include <errno.h>
+#include "debugutils.h"
 #include "debugimport.h"
 
 
@@ -19,8 +20,23 @@ ptrace_attach(PyObject *sdebug, PyObject *args)
     return Py_BuildValue("");
 }
 
+static PyObject *
+ptrace_read_memory(PyObject *sdebug, PyObject *args)
+{
+    pid_t pid;
+    uint64_t address;
+    size_t len;
+    if (!PyArg_ParseTuple(args, "ill", &pid, &address, &len))
+        return NULL;
+    PyObject *bytes_buffer = PyBytes_FromStringAndSize(NULL, len);
+    char *buffer = PyBytes_AsString(bytes_buffer);
+    read_memory(pid, address, buffer, len);
+    return bytes_buffer;
+}
+
 static PyMethodDef DebugHelperMethods[] = {
-    {"ptrace_attach", ptrace_attach, METH_VARARGS, "Attach to process"},
+    {"attach", ptrace_attach, METH_VARARGS, "Attach to process"},
+    {"read_memory", ptrace_read_memory, METH_VARARGS, "Read another process memory"},
     {NULL, NULL, 0, NULL}
 };
 
