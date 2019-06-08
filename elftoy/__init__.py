@@ -1,5 +1,6 @@
 import os
 import elftoy.elf
+import elftoy.debug
 
 from collections import namedtuple
 

@@ -21,6 +21,36 @@ ptrace_attach(PyObject *sdebug, PyObject *args)
 }
 
 static PyObject *
+ptrace_detach(PyObject *sdebug, PyObject *args)
+{
+    pid_t pid;
+    int rc;
+    if (!PyArg_ParseTuple(args, "i", &pid))
+        return NULL;
+    rc = ptrace(PTRACE_DETACH, pid, NULL, NULL);
+
+    if (rc == -1)
+        return  PyErr_SetFromErrno(PyExc_OSError);
+
+    return Py_BuildValue("");
+}
+
+static PyObject *
+ptrace_cont(PyObject *sdebug, PyObject *args)
+{
+    pid_t pid;
+    int rc;
+    if (!PyArg_ParseTuple(args, "i", &pid))
+        return NULL;
+    rc = ptrace(PTRACE_CONT, pid, NULL, NULL);
+
+    if (rc == -1)
+        return  PyErr_SetFromErrno(PyExc_OSError);
+
+    return Py_BuildValue("");
+}
+
+static PyObject *
 ptrace_read_memory(PyObject *sdebug, PyObject *args)
 {
     pid_t pid;
@@ -38,6 +68,8 @@ ptrace_read_memory(PyObject *sdebug, PyObject *args)
 
 static PyMethodDef DebugHelperMethods[] = {
     {"attach", ptrace_attach, METH_VARARGS, "Attach to process"},
+    {"detach", ptrace_detach, METH_VARARGS, "Detach from process"},
+    {"cont", ptrace_cont, METH_VARARGS, "Continue"},
     {"read_memory", ptrace_read_memory, METH_VARARGS, "Read another process memory"},
     {NULL, NULL, 0, NULL}
 };
