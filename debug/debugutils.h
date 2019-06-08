@@ -8,4 +8,6 @@
 
 int read_memory(pid_t pid, uint64_t addr, void *buffer, size_t len);
 
+int write_memory(pid_t pid, uint64_t addr, void *buffer, size_t len);
+
 #endif
