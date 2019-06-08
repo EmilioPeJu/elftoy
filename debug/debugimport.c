@@ -30,7 +30,9 @@ ptrace_read_memory(PyObject *sdebug, PyObject *args)
         return NULL;
     PyObject *bytes_buffer = PyBytes_FromStringAndSize(NULL, len);
     char *buffer = PyBytes_AsString(bytes_buffer);
-    read_memory(pid, address, buffer, len);
+    int rc = read_memory(pid, address, buffer, len);
+    if (rc == -1)
+        return  PyErr_SetFromErrno(PyExc_OSError);
     return bytes_buffer;
 }
 
